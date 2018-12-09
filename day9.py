@@ -10,11 +10,31 @@ with open('day9.txt') as fp:
     final = int(m.group(2))
 
 
+class Node:
+
+    def __init__(self, value: int):
+        self.value = value
+        self.next = None
+        self.prev = None
+
+    def insert_after(self, value: int):
+        new = Node(value)
+        new.next = self.next
+        new.prev = self
+        self.next.prev = new
+        self.next = new
+        return new
+
+    def pop(self):
+        self.next.prev = self.prev
+        self.prev.next = self.next
+        return self.value, self.next
+
+
 def part1():
     scores = [0] * players
-    circle = deque()
-    circle.append(0)
-    idx = 0
+    start = curr = Node(0)
+    curr.next = curr.prev = curr
 
     for n in range(1, final):
         if n % 10000 == 0:
@@ -22,13 +42,14 @@ def part1():
 
         if n % 23 == 0:
             scores[n % players] += n
-            idx = (idx - 7) % len(circle)
-            scores[n % players] += circle[idx]
-            del circle[idx]
+            for i in range(7):
+                curr = curr.prev
+
+            value, curr = curr.pop()
+            scores[n % players] += value
             continue
 
-        idx = (idx + 2) % len(circle)
-        circle.insert(idx, n)
+        curr = curr.next.insert_after(n)
 
     return max(scores)
 
