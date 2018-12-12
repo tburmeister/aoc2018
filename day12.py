@@ -41,15 +41,11 @@ results = np.array(results)
 
 def part1():
     left_idx = -30
-    right_idx = len(init_state) + 30
+    right_idx = len(init_state) + 500
     state = np.zeros(right_idx - left_idx, dtype=int)
     state[-left_idx:len(init_state)-left_idx] = init_state
-    print(state)
 
-    for n in range(20):
-        if n % 100 == 0:
-            print('{} of {} done'.format(n, 50000000000))
-
+    for n in range(3000):
         next_state = state.copy()
 
         for i in range(2, len(state) - 2):
@@ -58,16 +54,21 @@ def part1():
                     next_state[i] = result
                     break
 
-        if np.array_equal(state, next_state):
-            print(n)
+        found = False
+        for i in range(5):
+            if np.array_equal(state[:len(state)-i], next_state[i:]):
+                found = True
+                break
+
+        if found:
             break
 
         state = next_state
 
-    print(state)
     idx = np.arange(left_idx, right_idx)
-    print(idx)
-    return np.sum(state * idx)
+    sum1 = np.sum(state * idx)
+    sum2 = np.sum(next_state * idx)
+    return (50000000000 - n) * (sum2 - sum1) + sum1
 
 
 print(part1())
