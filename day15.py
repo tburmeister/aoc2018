@@ -22,7 +22,32 @@ rows2 = """
 #...E.#
 #######""".strip().split('\n')
 
-rows = rows2
+rows3 = """
+#######
+#.E...#
+#.....#
+#...G.#
+#######""".strip().split('\n')
+
+rows4 = """
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######""".strip().split('\n')
+
+rows5 = """
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######""".strip().split('\n')
+
+rows = rows
 
 dim_y = len(rows)
 dim_x = len(rows[0].strip())
@@ -35,7 +60,7 @@ for y, row in enumerate(rows):
 
 class Unit:
 
-    def __init__(self, x, y, board, units, allies):
+    def __init__(self, x, y, board, units, allies, enemies):
         self.x = x
         self.y = y
         self.hp = 200
@@ -43,6 +68,7 @@ class Unit:
         self.board = board
         self.units = units
         self.allies = allies
+        self.enemies = enemies
         units.append(self)
         allies.append(self)
 
@@ -74,6 +100,20 @@ class Unit:
 
         return False, -1, -1
 
+    def select_attack(self):
+        min_hp = 300
+        min_x = -1
+        min_y = -1
+
+        for unit in self.enemies:
+            if abs(unit.x - self.x) + abs(unit.y - self.y) == 1:
+                if unit.hp < min_hp:
+                    min_hp = unit.hp
+                    min_x = unit.x
+                    min_y = unit.y
+
+        return min_x, min_y
+
     def move(self):
         assert self.board[self.y][self.x] == self.ally, \
                 'Expected {}, got {}'.format(self.ally, self.board[self.y][self.x])
@@ -91,7 +131,7 @@ class Unit:
         self.board[y][x] = self.ally
 
         if d <= 1:
-            can, xx, yy = self.can_attack(x, y)
+            xx, yy = self.select_attack()
             self.attack(xx, yy)
 
         if self.hp <= 0:
@@ -179,19 +219,24 @@ def part1():
     for y, row in enumerate(board):
         for x, char in enumerate(row):
             if char == b'E'[0]:
-                Elf(x, y, board, units, elves)
+                Elf(x, y, board, units, elves, goblins)
             elif char == b'G'[0]:
-                Goblin(x, y, board, units, goblins)
+                Goblin(x, y, board, units, goblins, elves)
 
     print(len(elves))
     print(len(goblins))
     print_board(board)
     while len(elves) > 0 and len(goblins) > 0:
-        for unit in sorted(units, key=lambda u: u.y * dim_x + u.x):
+        start_len = len(units)
+        for idx, unit in enumerate(sorted(units, key=lambda u: u.y * dim_x + u.x)):
             if unit.hp > 0:
                 unit.move()
             if len(elves) == 0 or len(goblins) == 0:
                 break
+
+        if idx < start_len - 1:
+            print('breaking mid turn')
+            break
 
         turns += 1
         print_board(board)
