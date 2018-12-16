@@ -4,7 +4,7 @@ import time
 with open('day15.txt') as fp:
     rows = fp.readlines()
 
-rows = """
+rows1 = """
 #######
 #.G...#
 #...EG#
@@ -12,6 +12,17 @@ rows = """
 #..G#E#
 #.....#
 #######""".strip().split('\n')
+
+rows2 = """
+#######
+#G..#E#
+#E#E.E#
+#G.##.#
+#...#E#
+#...E.#
+#######""".strip().split('\n')
+
+rows = rows2
 
 dim_y = len(rows)
 dim_x = len(rows[0].strip())
@@ -90,14 +101,15 @@ class Unit:
         if visited[y][x] >= 0:
             return visited[y][x], x, y
 
-        # Sentinel
-        visited[y][x] = 10000
-
         can, _, _ = self.can_attack(x, y)
         if can:
             visited[y][x] = 0
             return 0, x, y
 
+        # Sentinel
+        visited[y][x] = 10000
+
+        to_adjust = []
         mind = 10000
         minx = -1
         miny = -1
@@ -106,26 +118,37 @@ class Unit:
             mind, _, _ = self.visit(visited, x, y-1)
             minx = x
             miny = y-1
+            if mind >= 10000:
+                to_adjust.append((x, y-1))
         if self.board[y][x-1] == b'.'[0]:
             d, _, _ = self.visit(visited, x-1, y)
             if d < mind:
                 mind = d
                 minx = x-1
                 miny = y
+            if mind >= 10000:
+                to_adjust.append((x-1, y))
         if self.board[y][x+1] == b'.'[0]:
             d, _, _ = self.visit(visited, x+1, y)
             if d < mind:
                 mind = d
                 minx = x+1
                 miny = y
+            if mind >= 10000:
+                to_adjust.append((x+1, y))
         if self.board[y+1][x] == b'.'[0]:
             d, _, _ = self.visit(visited, x, y+1)
             if d < mind:
                 mind = d
                 minx = x
                 miny = y+1
+            if mind >= 10000:
+                to_adjust.append((x, y+1))
 
         visited[y][x] = mind + 1
+        for xx, yy in to_adjust:
+            visited[yy][xx] = mind + 2
+
         return mind + 1, minx, miny
 
 
@@ -164,8 +187,9 @@ def part1():
     print(len(goblins))
     print_board(board)
     while len(elves) > 0 and len(goblins) > 0:
-        for unit in sorted(units, key=lambda u: u.y * dim_y + u.x):
-            unit.move()
+        for unit in sorted(units, key=lambda u: u.y * dim_x + u.x):
+            if unit.hp > 0:
+                unit.move()
             if len(elves) == 0 or len(goblins) == 0:
                 break
 
@@ -173,10 +197,10 @@ def part1():
         print_board(board)
 
     print_board(board)
-    print('{} turns'.format(turns - 1))
+    print('{} turns'.format(turns))
     print('{} hp'.format(sum(map(lambda u: u.hp, units))))
     print([u.hp for u in units])
-    return (turns - 1) * sum(map(lambda u: u.hp, units))
+    return turns * sum(map(lambda u: u.hp, units))
 
 
 print(part1())
