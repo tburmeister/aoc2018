@@ -47,6 +47,48 @@ rows5 = """
 #...#G#
 #######""".strip().split('\n')
 
+rows6 = """
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########""".strip().split('\n')
+
+rows7 = """
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######""".strip().split('\n')
+
+rows8 = """
+#######
+#######
+#.E..G#
+#G#####
+#G#####
+#######
+#######""".strip().split('\n')
+
+rows9 = """
+####
+#GG#
+#.E#
+####""".strip().split('\n')
+
+rows10 = """
+########
+#..E..G#
+#G######
+########
+########""".strip().split('\n')
+
 rows = rows
 
 dim_y = len(rows)
@@ -105,7 +147,7 @@ class Unit:
         min_x = -1
         min_y = -1
 
-        for unit in self.enemies:
+        for unit in sorted(self.enemies, key=lambda u: u.y * dim_x + u.x):
             if abs(unit.x - self.x) + abs(unit.y - self.y) == 1:
                 if unit.hp < min_hp:
                     min_hp = unit.hp
@@ -223,8 +265,6 @@ def part1():
             elif char == b'G'[0]:
                 Goblin(x, y, board, units, goblins, elves)
 
-    print(len(elves))
-    print(len(goblins))
     print_board(board)
     while len(elves) > 0 and len(goblins) > 0:
         start_len = len(units)
@@ -235,7 +275,7 @@ def part1():
                 break
 
         if idx < start_len - 1:
-            print('breaking mid turn')
+            print('breaking mid turn {}: unit {} of {}'.format(turns, idx+1, start_len))
             break
 
         turns += 1
